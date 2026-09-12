@@ -1,2 +1,1 @@
-РАБОТАТЬ НАДО 
-А НЕ ИГРАТЬ ДОТУ 
+HTML, browse to service of ordering food
