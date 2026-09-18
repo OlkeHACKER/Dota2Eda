@@ -1,10 +1,9 @@
-<html> 
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dota2Eda - сервис для заказа еды и продуктов по всему Казахстану.</title>
+    <title>FoodExpress — Заказ еды онлайн</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -12,14 +11,15 @@
     <!-- Шапка сайта -->
     <header class="header">
         <div class="container header__inner">
-            <div class="logo">Dota2Eda</div>
+            <div class="logo">FoodExpress</div>
             <nav class="nav">
                 <a href="#menu">Меню</a>
                 <a href="#about">О нас</a>
                 <a href="#contacts">Контакты</a>
             </nav>
-            <div class="header__cart">
-                🛒 Корзина (<span id="cart-count">0</span>)
+            <div class="header__actions">
+                <a href="login.html">Войти</a>
+                <div class="header__cart">🛒 Корзина (<span id="cart-count">0</span>)</div>
             </div>
         </div>
     </header>
@@ -28,7 +28,7 @@
     <section class="hero">
         <div class="container">
             <h1>Вкусная еда с доставкой за 30 минут</h1>
-            <p>Выбирайте из сотен блюд и заказывайте одним кликом</p>
+            <p>Выбирайте из сотен блюд от лучших ресторанов и кафе города</p>
             <a href="#menu" class="btn btn--primary">Смотреть меню</a>
         </div>
     </section>
@@ -36,28 +36,37 @@
     <!-- Меню / каталог блюд -->
     <section id="menu" class="menu">
         <div class="container">
-            <h2>Наше меню</h2>
+            <h2>Популярные блюда</h2>
             <div class="menu__grid">
 
                 <div class="dish-card">
                     <img src="img/pizza.jpg" alt="Пицца Маргарита">
-                    <h3>Пицца Маргарита</h3>
-                    <p class="price">2 500 ₸</p>
-                    <button class="btn btn--add">Добавить в корзину</button>
+                    <div class="dish-card__body">
+                        <span class="badge--open">Открыто</span>
+                        <h3>Пицца Маргарита</h3>
+                        <p class="price">2 500 ₸</p>
+                        <button class="btn btn--add">Добавить в корзину</button>
+                    </div>
                 </div>
 
                 <div class="dish-card">
                     <img src="img/burger.jpg" alt="Бургер классический">
-                    <h3>Бургер классический</h3>
-                    <p class="price">1 800 ₸</p>
-                    <button class="btn btn--add">Добавить в корзину</button>
+                    <div class="dish-card__body">
+                        <span class="badge--open">Открыто</span>
+                        <h3>Бургер классический</h3>
+                        <p class="price">1 800 ₸</p>
+                        <button class="btn btn--add">Добавить в корзину</button>
+                    </div>
                 </div>
 
                 <div class="dish-card">
                     <img src="img/sushi.jpg" alt="Сет суши">
-                    <h3>Сет суши</h3>
-                    <p class="price">4 200 ₸</p>
-                    <button class="btn btn--add">Добавить в корзину</button>
+                    <div class="dish-card__body">
+                        <span class="badge--open">Открыто</span>
+                        <h3>Сет суши</h3>
+                        <p class="price">4 200 ₸</p>
+                        <button class="btn btn--add">Добавить в корзину</button>
+                    </div>
                 </div>
 
             </div>
@@ -68,7 +77,7 @@
     <section id="about" class="about">
         <div class="container">
             <h2>О нас</h2>
-            <p>Мы доставляем свежую и вкусную еду по всему городу с 2024 года.</p>
+            <p>Мы доставляем свежую и вкусную еду от проверенных ресторанов, кафе и общепитов по всему городу.</p>
         </div>
     </section>
 
@@ -76,11 +85,11 @@
     <footer id="contacts" class="footer">
         <div class="container">
             <p>Телефон: +7 (700) 123-45-67</p>
-            <p>Email: Dota2Eda@gmail.kz</p>
-            <p>copy; 2026 Dota2Eda. Все права защищены.</p>
+            <p>Email: info@foodexpress.kz</p>
+            <p>&copy; 2026 FoodExpress. Все права защищены.</p>
         </div>
     </footer>
 
     <script src="js/script.js"></script>
 </body>
-</html>  
+</html>

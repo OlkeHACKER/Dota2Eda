@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход — FoodExpress</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="auth">
+        <div class="auth-card">
+            <a href="index.html" class="logo">FoodExpress</a>
+            <h1>Вход в аккаунт</h1>
+
+            <form id="loginForm" novalidate>
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                    <div class="field-error" id="emailError">Введите корректный email</div>
+                </div>
+
+                <div class="field">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" required minlength="6">
+                    <div class="field-error" id="passwordError">Пароль минимум 6 символов</div>
+                </div>
+
+                <button type="submit" class="btn btn--primary btn--full">Войти</button>
+            </form>
+
+            <p class="auth-switch">Нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>

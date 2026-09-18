@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация — FoodExpress</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="auth">
+        <div class="auth-card">
+            <a href="index.html" class="logo">FoodExpress</a>
+            <h1>Создать аккаунт</h1>
+
+            <form id="registerForm" novalidate>
+                <div class="field">
+                    <label for="name">Имя</label>
+                    <input type="text" id="name" name="name" required>
+                    <div class="field-error" id="nameError">Введите имя</div>
+                </div>
+
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                    <div class="field-error" id="emailError">Введите корректный email</div>
+                </div>
+
+                <div class="field">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" required minlength="6">
+                    <div class="field-error" id="passwordError">Пароль минимум 6 символов</div>
+                </div>
+
+                <div class="field">
+                    <label for="role">Регистрируюсь как</label>
+                    <select id="role" name="role">
+                        <option value="user">Покупатель</option>
+                        <option value="restaurant_owner">Ресторан / кафе</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn--primary btn--full">Зарегистрироваться</button>
+            </form>
+
+            <p class="auth-switch">Уже есть аккаунт? <a href="login.html">Войти</a></p>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>
