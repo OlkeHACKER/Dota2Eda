@@ -1,0 +1,101 @@
+// Схема базы данных для проекта Domashka
+// После заполнения .env запустите: npx prisma migrate dev --name init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  RESTAURANT_ADMIN
+}
+
+enum OrderStatus {
+  CREATED
+  ACCEPTED
+  COOKING
+  DELIVERING
+  DELIVERED
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(CUSTOMER)
+  createdAt    DateTime @default(now())
+
+  orders       Order[]
+  restaurant   Restaurant? // заполняется, если это владелец ресторана
+
+  @@map("users")
+}
+
+model Restaurant {
+  id              Int       @id @default(autoincrement())
+  name            String
+  cuisine         String
+  country         String?
+  rating          Int?
+  cover           String?
+  usdToKztRate    Decimal?  @db.Decimal(10, 2)
+  rateDate        DateTime?
+  importKey       String?   @unique
+  ownerId         Int?      @unique
+  owner           User?     @relation(fields: [ownerId], references: [id])
+  createdAt       DateTime  @default(now())
+
+  dishes          Dish[]
+  orders          Order[]
+
+  @@map("restaurants")
+}
+
+model Dish {
+  id           Int        @id @default(autoincrement())
+  name         String
+  description  String?
+  price        Int        // цена в тенге, целым числом
+  priceUsd     Int?
+  image        String?
+  importKey    String?    @unique
+  restaurantId Int
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  orderItems   OrderItem[]
+
+  @@map("dishes")
+}
+
+model Order {
+  id           Int         @id @default(autoincrement())
+  status       OrderStatus @default(CREATED)
+  total        Int
+  customerId   Int
+  customer     User        @relation(fields: [customerId], references: [id])
+  restaurantId Int
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
+  createdAt    DateTime    @default(now())
+
+  items        OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id       Int   @id @default(autoincrement())
+  orderId  Int
+  order    Order @relation(fields: [orderId], references: [id])
+  dishId   Int
+  dish     Dish  @relation(fields: [dishId], references: [id])
+  qty      Int
+  price    Int   // цена на момент заказа (вдруг блюдо потом подорожает)
+
+  @@map("order_items")
+}

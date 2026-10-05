@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация — FoodExpress</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -14,6 +14,7 @@
             <h1>Создать аккаунт</h1>
 
             <form id="registerForm" novalidate>
+                <p class="form-message" id="registerMessage" role="alert"></p>
                 <div class="field">
                     <label for="name">Имя</label>
                     <input type="text" id="name" name="name" required>
@@ -35,9 +36,16 @@
                 <div class="field">
                     <label for="role">Регистрируюсь как</label>
                     <select id="role" name="role">
-                        <option value="user">Покупатель</option>
-                        <option value="restaurant_owner">Ресторан / кафе</option>
+                        <option value="CUSTOMER">Покупатель</option>
+                        <option value="RESTAURANT_ADMIN">Ресторан / кафе</option>
                     </select>
+                </div>
+
+                <div class="field" id="restaurant-fields" hidden>
+                    <label for="restaurantName">Название ресторана</label>
+                    <input type="text" id="restaurantName" name="restaurantName">
+                    <label for="cuisine">Кухня</label>
+                    <input type="text" id="cuisine" name="cuisine">
                 </div>
 
                 <button type="submit" class="btn btn--primary btn--full">Зарегистрироваться</button>
@@ -47,6 +55,6 @@
         </div>
     </div>
 
-    <script src="js/auth.js"></script>
+    <script src="auth.js"></script>
 </body>
 </html>

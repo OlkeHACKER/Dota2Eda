@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FoodExpress — Заказ еды онлайн</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -18,8 +18,8 @@
                 <a href="#contacts">Контакты</a>
             </nav>
             <div class="header__actions">
-                <a href="login.html">Войти</a>
-                <div class="header__cart">🛒 Корзина (<span id="cart-count">0</span>)</div>
+                <a href="login.html" id="account-link">Войти</a>
+                <a href="#cart" class="header__cart">🛒 Корзина (<span id="cart-count">0</span>)</a>
             </div>
         </div>
     </header>
@@ -36,40 +36,41 @@
     <!-- Меню / каталог блюд -->
     <section id="menu" class="menu">
         <div class="container">
-            <h2>Популярные блюда</h2>
-            <div class="menu__grid">
+            <h2>Рестораны и меню</h2>
+            <p id="menu-rate-note" class="menu__rate-note"></p>
+            <p id="menu-message" role="status">Загружаем меню…</p>
+            <div class="menu__grid" id="menu-grid"></div>
+        </div>
+    </section>
 
-                <div class="dish-card">
-                    <img src="img/pizza.jpg" alt="Пицца Маргарита">
-                    <div class="dish-card__body">
-                        <span class="badge--open">Открыто</span>
-                        <h3>Пицца Маргарита</h3>
-                        <p class="price">2 500 ₸</p>
-                        <button class="btn btn--add">Добавить в корзину</button>
-                    </div>
-                </div>
+    <section class="cart" id="cart">
+        <div class="container">
+            <h2>Корзина</h2>
+            <p id="cart-message" role="status">Корзина пуста</p>
+            <ul id="cart-items" class="cart__items"></ul>
+            <p class="cart__total">Итого: <strong id="cart-total">0 ₸</strong></p>
+            <button type="button" class="btn btn--primary" id="checkout-button" disabled>
+                Оформить заказ
+            </button>
+        </div>
+    </section>
 
-                <div class="dish-card">
-                    <img src="img/burger.jpg" alt="Бургер классический">
-                    <div class="dish-card__body">
-                        <span class="badge--open">Открыто</span>
-                        <h3>Бургер классический</h3>
-                        <p class="price">1 800 ₸</p>
-                        <button class="btn btn--add">Добавить в корзину</button>
-                    </div>
-                </div>
-
-                <div class="dish-card">
-                    <img src="img/sushi.jpg" alt="Сет суши">
-                    <div class="dish-card__body">
-                        <span class="badge--open">Открыто</span>
-                        <h3>Сет суши</h3>
-                        <p class="price">4 200 ₸</p>
-                        <button class="btn btn--add">Добавить в корзину</button>
-                    </div>
-                </div>
-
-            </div>
+    <section class="owner-panel" id="owner-panel" hidden>
+        <div class="container">
+            <h2>Управление рестораном</h2>
+            <p id="owner-restaurant-name"></p>
+            <form id="dish-form" class="owner-panel__form">
+                <label for="dish-name">Новое блюдо</label>
+                <input type="text" id="dish-name" required maxlength="120" placeholder="Название блюда">
+                <label for="dish-price">Цена, ₸</label>
+                <input type="number" id="dish-price" required min="1" step="1">
+                <label for="dish-image">Ссылка на фото (необязательно)</label>
+                <input type="url" id="dish-image">
+                <button type="submit" class="btn btn--primary">Добавить блюдо</button>
+            </form>
+            <p id="owner-message" role="status"></p>
+            <h3>Заказы ресторана</h3>
+            <div id="owner-orders"></div>
         </div>
     </section>
 
@@ -90,6 +91,6 @@
         </div>
     </footer>
 
-    <script src="js/script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
