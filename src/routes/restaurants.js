@@ -1,4 +1,5 @@
 const express = require('express');
+const QRCode = require('qrcode');
 const prisma = require('../prisma');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
@@ -17,9 +18,33 @@ router.get('/mine', requireAuth, requireRole('RESTAURANT_ADMIN'), async (req, re
 
 router.get('/', async (req, res) => {
   const restaurants = await prisma.restaurant.findMany({
-    include: { dishes: true },
+    include: {
+      dishes: { include: { winePairings: true, origins: true } },
+      timeline: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] },
+    },
   });
   res.json(restaurants);
+});
+
+router.get('/:id/qr.svg', async (req, res) => {
+  const restaurantId = Number(req.params.id);
+  if (!Number.isSafeInteger(restaurantId) || restaurantId < 1) {
+    return res.status(400).json({ error: 'Некорректный идентификатор ресторана' });
+  }
+  const restaurant = await prisma.restaurant.findUnique({
+    where: { id: restaurantId },
+    select: { id: true },
+  });
+  if (!restaurant) return res.status(404).json({ error: 'Ресторан не найден' });
+  const url = new URL('/index.html', `${req.protocol}://${req.get('host')}`);
+  url.searchParams.set('restaurant', String(restaurantId));
+  const svg = await QRCode.toString(url.toString(), {
+    type: 'svg',
+    errorCorrectionLevel: 'H',
+    margin: 1,
+    width: 240,
+  });
+  res.type('image/svg+xml').send(svg);
 });
 
 // Один ресторан с меню (для страницы ресторана)
@@ -31,7 +56,10 @@ router.get('/:id', async (req, res) => {
 
   const restaurant = await prisma.restaurant.findUnique({
     where: { id: restaurantId },
-    include: { dishes: true },
+    include: {
+      dishes: { include: { winePairings: true, origins: true } },
+      timeline: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] },
+    },
   });
 
   if (!restaurant) {

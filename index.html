@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FoodExpress — Заказ еды онлайн</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/vendor/leaflet.css">
 </head>
 <body>
 
@@ -13,13 +14,23 @@
         <div class="container header__inner">
             <div class="logo">FoodExpress</div>
             <nav class="nav">
-                <a href="#menu">Меню</a>
-                <a href="#about">О нас</a>
-                <a href="#contacts">Контакты</a>
+                <a href="#menu" data-i18n="navMenu">Меню</a>
+                <a href="#booking" data-i18n="bookingTitle">Забронировать столик</a>
+                <a href="#about" data-i18n="navAbout">О нас</a>
+                <a href="#contacts" data-i18n="navContacts">Контакты</a>
             </nav>
             <div class="header__actions">
-                <a href="login.html" id="account-link">Войти</a>
-                <a href="#cart" class="header__cart">🛒 Корзина (<span id="cart-count">0</span>)</a>
+                <label class="language-picker" for="language-select">
+                    <span class="visually-hidden">Язык / Тіл / Language</span>
+                    <select id="language-select" aria-label="Язык / Тіл / Language">
+                        <option value="ru">RU</option>
+                        <option value="kk">KZ</option>
+                        <option value="en">EN</option>
+                    </select>
+                </label>
+                <a href="login.html" id="account-link" data-i18n="login">Войти</a>
+                <button id="sound-toggle" class="icon-button" type="button" aria-pressed="false" aria-label="Включить атмосферный звук">♪</button>
+                <a href="#cart" class="header__cart">🛒 <span data-i18n="cart">Корзина</span> (<span id="cart-count">0</span>)</a>
             </div>
         </div>
     </header>
@@ -27,58 +38,130 @@
     <!-- Приветственный блок -->
     <section class="hero">
         <div class="container">
-            <h1>Вкусная еда с доставкой за 30 минут</h1>
-            <p>Выбирайте из сотен блюд от лучших ресторанов и кафе города</p>
-            <a href="#menu" class="btn btn--primary">Смотреть меню</a>
+            <h1 data-i18n="heroTitle">Вкусная еда с доставкой за 30 минут</h1>
+            <p data-i18n="heroSubtitle">Выбирайте из сотен блюд от лучших ресторанов и кафе города</p>
+            <a href="#menu" class="btn btn--primary" data-i18n="watchMenu">Смотреть меню</a>
+            <article class="seasonal-feature" id="seasonal-feature" hidden>
+                <span id="seasonal-label"></span>
+                <h2 id="seasonal-dish"></h2>
+                <p id="seasonal-description"></p>
+                <button class="btn btn--primary" type="button" id="seasonal-open"></button>
+            </article>
         </div>
     </section>
 
     <!-- Меню / каталог блюд -->
     <section id="menu" class="menu">
         <div class="container">
-            <h2>Рестораны и меню</h2>
+            <h2 data-i18n="menuTitle">Рестораны и меню</h2>
             <p id="menu-rate-note" class="menu__rate-note"></p>
             <p id="menu-message" role="status">Загружаем меню…</p>
+            <div id="restaurant-tabs" class="restaurant-tabs" role="tablist" aria-label="Выбор ресторана"></div>
+            <div id="restaurant-details" class="restaurant-details" hidden>
+                <h3 id="restaurant-name"></h3>
+                <p id="restaurant-meta"></p>
+                <p id="restaurant-description"></p>
+            </div>
             <div class="menu__grid" id="menu-grid"></div>
         </div>
     </section>
 
-    <section class="cart" id="cart">
+    <section class="experience-section" id="experience">
         <div class="container">
-            <h2>Корзина</h2>
-            <p id="cart-message" role="status">Корзина пуста</p>
-            <ul id="cart-items" class="cart__items"></ul>
-            <p class="cart__total">Итого: <strong id="cart-total">0 ₸</strong></p>
-            <button type="button" class="btn btn--primary" id="checkout-button" disabled>
-                Оформить заказ
-            </button>
+            <p class="eyebrow">THE DINNER EXPERIENCE</p>
+            <h2 data-i18n="experienceTitle">Ужин с вниманием к каждой детали</h2>
+            <div class="experience-grid">
+                <article class="experience-card">
+                    <h3 data-i18n="wineTitle">Подбор вина</h3>
+                    <label for="wine-intensity" class="range-label">
+                        <span data-i18n="wineLight">Лёгкое</span>
+                        <span data-i18n="wineFull">Насыщенное</span>
+                    </label>
+                    <input id="wine-intensity" type="range" min="1" max="5" value="3" step="1">
+                    <p id="wine-recommendation" role="status" data-i18n="chooseDish">Сначала выберите блюдо</p>
+                    <p id="wine-dish-name" class="muted-copy"></p>
+                </article>
+                <article class="experience-card">
+                    <h3 data-i18n="chefTitle">Голос шефа</h3>
+                    <p id="chef-copy" data-i18n="chefEmpty">История и интервью шефа появятся, когда ресторан добавит их.</p>
+                    <div id="chef-video"></div>
+                </article>
+            </div>
+            <div id="dinner-timeline" class="dinner-timeline" hidden>
+                <h3 data-i18n="timelineTitle">План вечера</h3>
+                <ol id="timeline-events"></ol>
+            </div>
         </div>
     </section>
 
-    <section class="owner-panel" id="owner-panel" hidden>
+    <section class="booking-section" id="booking">
         <div class="container">
-            <h2>Управление рестораном</h2>
-            <p id="owner-restaurant-name"></p>
-            <form id="dish-form" class="owner-panel__form">
-                <label for="dish-name">Новое блюдо</label>
-                <input type="text" id="dish-name" required maxlength="120" placeholder="Название блюда">
-                <label for="dish-price">Цена, ₸</label>
-                <input type="number" id="dish-price" required min="1" step="1">
-                <label for="dish-image">Ссылка на фото (необязательно)</label>
-                <input type="url" id="dish-image">
-                <button type="submit" class="btn btn--primary">Добавить блюдо</button>
+            <p class="eyebrow">YOUR TABLE</p>
+            <h2 data-i18n="bookingTitle">Забронировать столик</h2>
+            <p id="booking-hint" role="status" data-i18n="selectRestaurant">Выберите ресторан в меню, чтобы посмотреть план зала.</p>
+            <form id="booking-form">
+                <label for="booking-datetime" data-i18n="bookingDate">Дата и время</label>
+                <input id="booking-datetime" type="datetime-local" required>
+                <label for="booking-guests" data-i18n="bookingGuests">Количество гостей</label>
+                <input id="booking-guests" type="number" min="1" max="20" value="2" required>
+                <label for="booking-note" data-i18n="bookingNote">Пожелания</label>
+                <input id="booking-note" type="text" maxlength="500">
             </form>
-            <p id="owner-message" role="status"></p>
-            <h3>Заказы ресторана</h3>
-            <div id="owner-orders"></div>
+            <div id="table-plan" class="table-plan" role="group" aria-label="План зала"></div>
+            <p id="booking-message" role="status"></p>
+            <button id="booking-submit" class="btn btn--primary" type="submit" form="booking-form" disabled data-i18n="confirmBooking">Подтвердить бронирование</button>
+        </div>
+    </section>
+
+    <section class="origins-section" id="origins-section" hidden>
+        <div class="container">
+            <p class="eyebrow">FROM THE SOURCE</p>
+            <h2 data-i18n="originsTitle">География вкуса</h2>
+            <p data-i18n="originsNote">На карте отмечены только подтверждённые рестораном поставщики.</p>
+            <div id="origins-map" role="region" aria-label="Карта происхождения ингредиентов"></div>
+            <p id="origins-map-note" class="muted-copy"></p>
+            <div id="origins-list" class="origins-list"></div>
+        </div>
+    </section>
+
+    <section class="print-menu" id="print-menu" hidden>
+        <h1 id="print-restaurant-name"></h1>
+        <p id="print-restaurant-description"></p>
+        <div id="print-dishes"></div>
+        <div class="print-qr">
+            <img id="restaurant-qr" alt="QR-код меню ресторана">
+            <span data-i18n="scanToOrder">Отсканируйте, чтобы открыть меню и заказать</span>
+        </div>
+    </section>
+
+    <dialog id="dish-3d-dialog" class="dish-dialog">
+        <form method="dialog" class="dish-dialog__close">
+            <button class="icon-button" aria-label="Закрыть 3D-просмотр">×</button>
+        </form>
+        <p class="eyebrow">INTERACTIVE PLATE</p>
+        <h2 id="dish-3d-title"></h2>
+        <p id="dish-3d-caption" class="muted-copy"></p>
+        <div id="dish-3d-viewer" class="dish-3d-viewer"></div>
+        <p class="muted-copy" data-i18n="threeNote">Интерактивная художественная 3D-визуализация блюда, вращайте мышью или касанием.</p>
+    </dialog>
+
+    <section class="cart" id="cart">
+        <div class="container">
+            <h2 data-i18n="cartTitle">Корзина</h2>
+            <p id="cart-message" role="status">Корзина пуста</p>
+            <ul id="cart-items" class="cart__items"></ul>
+            <p class="cart__total"><span data-i18n="cartTotal">Итого:</span> <strong id="cart-total">0 ₸</strong></p>
+            <button type="button" class="btn btn--primary" id="checkout-button" disabled data-i18n="checkout">
+                Оформить заказ
+            </button>
         </div>
     </section>
 
     <!-- О нас -->
     <section id="about" class="about">
         <div class="container">
-            <h2>О нас</h2>
-            <p>Мы доставляем свежую и вкусную еду от проверенных ресторанов, кафе и общепитов по всему городу.</p>
+            <h2 data-i18n="aboutTitle">О нас</h2>
+            <p data-i18n="aboutDescription">Мы доставляем свежую и вкусную еду от проверенных ресторанов, кафе и общепитов по всему городу.</p>
         </div>
     </section>
 
@@ -92,5 +175,8 @@
     </footer>
 
     <script src="script.js"></script>
+    <script src="/vendor/leaflet.js"></script>
+    <script src="restaurant-experience.js"></script>
+    <script type="module" src="three-viewer.js"></script>
 </body>
 </html>

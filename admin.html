@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель ресторана — FoodExpress</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin-page">
+    <header class="header">
+        <div class="container header__inner">
+            <a class="logo" href="index.html">FoodExpress</a>
+            <nav class="nav">
+                <a href="index.html">Открыть сайт</a>
+                <a href="#admin-dishes">Меню</a>
+                <a href="#admin-reservations">Бронирования</a>
+            </nav>
+            <button class="icon-button" id="admin-logout" type="button">Выйти</button>
+        </div>
+    </header>
+
+    <main class="container admin-main">
+        <p class="eyebrow">RESTAURANT STUDIO</p>
+        <h1 id="admin-title">Панель ресторана</h1>
+        <p id="admin-message" class="admin-message" role="status">Загружаем данные ресторана…</p>
+        <div id="admin-content" hidden>
+            <section class="admin-stats" id="admin-stats"></section>
+
+            <section class="admin-section">
+                <h2>Ресторан и интервью шефа</h2>
+                <form id="restaurant-form" class="admin-form">
+                    <label>Название<input name="name" required maxlength="120"></label>
+                    <label>Кухня<input name="cuisine" required maxlength="120"></label>
+                    <label>Страна<input name="country" maxlength="120"></label>
+                    <label>О ресторане<textarea name="description" rows="3" maxlength="3000"></textarea></label>
+                    <label>Имя шефа<input name="chefName" maxlength="120"></label>
+                    <label>Ссылка на YouTube или Vimeo<input name="chefVideoUrl" type="url" placeholder="https://youtu.be/..."></label>
+                    <label>Переводы названия и описания (JSON: ru, kk, en)
+                        <textarea name="translations" rows="5" placeholder='{"kk":{"name":"...","description":"..."},"en":{"name":"...","description":"..."}}'></textarea>
+                    </label>
+                    <button class="btn btn--primary" type="submit">Сохранить ресторан</button>
+                </form>
+            </section>
+
+            <section class="admin-section" id="admin-dishes">
+                <h2>Меню и истории блюд</h2>
+                <button id="new-dish-button" class="btn btn--outline" type="button">Добавить блюдо</button>
+                <label for="dish-picker">Выберите блюдо</label>
+                <select id="dish-picker"></select>
+                <form id="admin-dish-form" class="admin-form admin-form--wide">
+                    <label>Название<input name="name" required maxlength="160"></label>
+                    <label>Описание<textarea name="description" rows="2" maxlength="3000"></textarea></label>
+                    <div class="admin-form__row">
+                        <label>Цена, ₸<input name="price" type="number" min="1" required></label>
+                        <label>Цена, USD<input name="priceUsd" type="number" min="1"></label>
+                    </div>
+                    <label>Фото (URL)<input name="image" type="url"></label>
+                    <label>История блюда / замысел шефа<textarea name="story" rows="3" maxlength="5000"></textarea></label>
+                    <label>Видео о блюде, YouTube/Vimeo<input name="chefVideoUrl" type="url"></label>
+                    <div class="admin-form__row">
+                        <label>Сезон
+                            <select name="season">
+                                <option value="">Круглый год</option>
+                                <option value="spring">Весна</option>
+                                <option value="summer">Лето</option>
+                                <option value="autumn">Осень</option>
+                                <option value="winter">Зима</option>
+                            </select>
+                        </label>
+                        <label>Время дня
+                            <select name="dayPeriod">
+                                <option value="">Любое</option>
+                                <option value="morning">Утро</option>
+                                <option value="afternoon">День</option>
+                                <option value="evening">Вечер</option>
+                                <option value="night">Ночь</option>
+                            </select>
+                        </label>
+                    </div>
+                    <label>Переводы блюда (JSON: ru, kk, en)
+                        <textarea name="translations" rows="4" placeholder='{"kk":{"name":"...","description":"..."},"en":{"name":"...","description":"..."}}'></textarea>
+                    </label>
+                    <label>Винные рекомендации (JSON)
+                        <textarea name="winePairings" rows="5" placeholder='[{"name":"Название вина","producer":"Производитель","intensity":3,"description":"Почему подходит"}]'></textarea>
+                    </label>
+                    <label>Происхождение ингредиентов (JSON)
+                        <textarea name="origins" rows="6" placeholder='[{"ingredient":"Ингредиент","region":"Регион","country":"Страна","supplier":"Поставщик","story":"История","latitude":43.2,"longitude":76.9}]'></textarea>
+                    </label>
+                    <button class="btn btn--primary" type="submit">Сохранить блюдо</button>
+                </form>
+                <button id="delete-dish-button" class="admin-remove admin-remove--large" type="button">Удалить блюдо</button>
+            </section>
+
+            <section class="admin-section">
+                <h2>План зала и столики</h2>
+                <div class="table-plan table-plan--admin" id="admin-table-plan"></div>
+                <form id="table-form" class="admin-form admin-form--inline">
+                    <label>Название столика<input name="name" required maxlength="40" placeholder="Стол 1"></label>
+                    <label>Места<input name="seats" type="number" required min="1" max="20" value="2"></label>
+                    <label>Расположение<input name="location" required maxlength="80" placeholder="У окна"></label>
+                    <label>X, 5–95<input name="x" type="number" min="5" max="95" value="50"></label>
+                    <label>Y, 5–95<input name="y" type="number" min="5" max="95" value="50"></label>
+                    <button class="btn btn--primary" type="submit">Добавить столик</button>
+                </form>
+            </section>
+
+            <section class="admin-section">
+                <h2>Таймлайн ужина</h2>
+                <ol id="admin-timeline" class="admin-list"></ol>
+                <form id="timeline-form" class="admin-form admin-form--inline">
+                    <label>Время<input name="time" type="time" required></label>
+                    <label>Событие<input name="title" required maxlength="120" placeholder="Встреча гостей"></label>
+                    <label>Описание<input name="description" maxlength="1000"></label>
+                    <button class="btn btn--primary" type="submit">Добавить событие</button>
+                </form>
+            </section>
+
+            <section class="admin-section" id="admin-reservations">
+                <h2>Бронирования</h2>
+                <div id="admin-reservations-list" class="admin-list"></div>
+            </section>
+
+            <section class="admin-section">
+                <h2>Заказы</h2>
+                <div id="admin-orders-list" class="admin-list"></div>
+            </section>
+
+            <section class="admin-section">
+                <h2>Печатное меню и QR-код</h2>
+                <p>Откройте страницу ресторана, выберите «Печать / PDF». QR-код будет вести прямо на меню этого ресторана.</p>
+                <a id="admin-menu-link" class="btn btn--primary" href="index.html">Открыть печатное меню</a>
+            </section>
+        </div>
+    </main>
+    <script src="admin.js"></script>
+</body>
+</html>

@@ -7,6 +7,8 @@ const prisma = require('./prisma');
 const authRoutes = require('./routes/auth');
 const restaurantRoutes = require('./routes/restaurants');
 const orderRoutes = require('./routes/orders');
+const adminRoutes = require('./routes/admin');
+const reservationRoutes = require('./routes/reservations');
 
 if (!process.env.DATABASE_URL) {
   throw new Error('Не задан DATABASE_URL. Заполните файл .env.');
@@ -44,6 +46,8 @@ app.get('/api/health', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api', reservationRoutes);
 
 app.get(['/', '/index.html'], (req, res) => {
   res.sendFile(path.join(projectRoot, 'index.html'));
@@ -55,6 +59,36 @@ app.get('/login.html', (req, res) => {
 
 app.get('/register.html', (req, res) => {
   res.sendFile(path.join(projectRoot, 'register.html'));
+});
+
+app.get('/admin.html', (req, res) => {
+  res.sendFile(path.join(projectRoot, 'admin.html'));
+});
+
+app.get(['/restaurant-experience.js', '/admin.js', '/three-viewer.js'], (req, res, next) => {
+  const fileName = path.basename(req.path);
+  res.sendFile(path.join(projectRoot, fileName), (error) => {
+    if (error) next(error);
+  });
+});
+
+app.get('/node_modules/three/build/three.module.js', (req, res) => {
+  res.sendFile(path.join(projectRoot, 'node_modules', 'three', 'build', 'three.module.js'));
+});
+
+app.get(['/vendor/three.module.js', '/vendor/three.core.js'], (req, res, next) => {
+  const fileName = path.basename(req.path);
+  res.sendFile(path.join(projectRoot, 'node_modules', 'three', 'build', fileName), (error) => {
+    if (error) next(error);
+  });
+});
+
+app.get('/vendor/leaflet.js', (req, res) => {
+  res.sendFile(path.join(projectRoot, 'node_modules', 'leaflet', 'dist', 'leaflet.js'));
+});
+
+app.get('/vendor/leaflet.css', (req, res) => {
+  res.sendFile(path.join(projectRoot, 'node_modules', 'leaflet', 'dist', 'leaflet.css'));
 });
 
 app.get(['/style.css', '/script.js', '/auth.js'], (req, res, next) => {

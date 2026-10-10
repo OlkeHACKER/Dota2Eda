@@ -23,6 +23,12 @@ enum OrderStatus {
   DELIVERED
 }
 
+enum ReservationStatus {
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
 model User {
   id           Int      @id @default(autoincrement())
   name         String
@@ -32,6 +38,7 @@ model User {
   createdAt    DateTime @default(now())
 
   orders       Order[]
+  reservations Reservation[]
   restaurant   Restaurant? // заполняется, если это владелец ресторана
 
   @@map("users")
@@ -44,6 +51,10 @@ model Restaurant {
   country         String?
   rating          Int?
   cover           String?
+  description     String?
+  chefName        String?
+  chefVideoUrl    String?
+  translations    Json?
   usdToKztRate    Decimal?  @db.Decimal(10, 2)
   rateDate        DateTime?
   importKey       String?   @unique
@@ -53,6 +64,9 @@ model Restaurant {
 
   dishes          Dish[]
   orders          Order[]
+  tables          RestaurantTable[]
+  reservations    Reservation[]
+  timeline        DinnerTimelineEvent[]
 
   @@map("restaurants")
 }
@@ -64,13 +78,95 @@ model Dish {
   price        Int        // цена в тенге, целым числом
   priceUsd     Int?
   image        String?
+  story        String?
+  chefVideoUrl String?
+  season       String?
+  dayPeriod    String?
+  translations Json?
   importKey    String?    @unique
   restaurantId Int
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
 
   orderItems   OrderItem[]
+  winePairings WinePairing[]
+  origins      IngredientOrigin[]
 
   @@map("dishes")
+}
+
+model WinePairing {
+  id          Int      @id @default(autoincrement())
+  dishId      Int
+  dish        Dish     @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  name        String
+  producer    String?
+  intensity   Int
+  description String?
+  createdAt   DateTime @default(now())
+
+  @@unique([dishId, name])
+  @@map("wine_pairings")
+}
+
+model IngredientOrigin {
+  id           Int      @id @default(autoincrement())
+  dishId        Int
+  dish          Dish     @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  ingredient    String
+  region        String
+  country       String
+  supplier      String?
+  story         String?
+  latitude      Float?
+  longitude     Float?
+
+  @@map("ingredient_origins")
+}
+
+model RestaurantTable {
+  id           Int           @id @default(autoincrement())
+  restaurantId Int
+  restaurant   Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name         String
+  seats        Int
+  location     String
+  x            Int           @default(50)
+  y            Int           @default(50)
+  reservations Reservation[]
+
+  @@unique([restaurantId, name])
+  @@map("restaurant_tables")
+}
+
+model Reservation {
+  id           Int               @id @default(autoincrement())
+  restaurantId Int
+  restaurant   Restaurant        @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  tableId      Int
+  table        RestaurantTable   @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  userId       Int
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startsAt     DateTime
+  guests       Int
+  note         String?
+  status       ReservationStatus @default(CONFIRMED)
+  createdAt    DateTime          @default(now())
+
+  @@index([restaurantId, startsAt])
+  @@index([tableId, startsAt])
+  @@map("reservations")
+}
+
+model DinnerTimelineEvent {
+  id           Int        @id @default(autoincrement())
+  restaurantId Int
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  time         String
+  title        String
+  description  String?
+  sortOrder    Int        @default(0)
+
+  @@map("dinner_timeline_events")
 }
 
 model Order {

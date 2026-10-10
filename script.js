@@ -2,6 +2,21 @@ const API_URL = '/api';
 const cartStorageKey = 'foodexpress-cart';
 const formatPrice = new Intl.NumberFormat('ru-RU');
 let availableMenu = new Map();
+let menuRestaurants = [];
+let activeRestaurantId = null;
+let currentLanguage = localStorage.getItem('foodexpress-language') || 'ru';
+let menuExchangeRate = null;
+
+function uiText(key, fallback) {
+  return window.foodText?.(key) || fallback;
+}
+
+function renderExchangeRateNote() {
+  const rateNote = document.getElementById('menu-rate-note');
+  rateNote.textContent = menuExchangeRate
+    ? `${uiText('rateNote', 'Курс для пересчёта цен:')} 1 $ = ${formatPrice.format(Number(menuExchangeRate.usdToKztRate))} ₸ (${uiText('rateSource', 'Нацбанк Казахстана')}, ${new Date(menuExchangeRate.rateDate).toLocaleDateString(currentLanguage === 'kk' ? 'kk-KZ' : currentLanguage === 'en' ? 'en-US' : 'ru-RU')}).`
+    : '';
+}
 
 function loadCart() {
   try {
@@ -47,8 +62,8 @@ function renderCart() {
   countElement.textContent = String(itemCount);
   totalElement.textContent = `${formatPrice.format(total)} ₸`;
   messageElement.textContent = hasUnavailableItems
-    ? 'В корзине есть блюда из старого меню. Удалите их перед заказом.'
-    : cart.length ? '' : 'Корзина пуста';
+    ? uiText('oldCart', 'В корзине есть блюда из старого меню. Удалите их перед заказом.')
+    : cart.length ? '' : uiText('cartEmpty', 'Корзина пуста');
   checkoutButton.disabled = cart.length === 0 || hasUnavailableItems;
 
   cart.forEach((item) => {
@@ -56,11 +71,11 @@ function renderCart() {
     row.className = 'cart__item';
     const description = document.createElement('span');
     const unavailable = availableMenu.size && availableMenu.get(item.dishId) !== item.restaurantId;
-    description.textContent = `${item.name} × ${item.qty} — ${formatPrice.format(item.price * item.qty)} ₸${unavailable ? ' (больше недоступно)' : ''}`;
+    description.textContent = `${item.name} × ${item.qty} — ${formatPrice.format(item.price * item.qty)} ₸${unavailable ? ` (${uiText('unavailable', 'больше недоступно')})` : ''}`;
     const removeButton = document.createElement('button');
     removeButton.type = 'button';
     removeButton.className = 'cart__remove';
-    removeButton.textContent = 'Убрать';
+    removeButton.textContent = uiText('remove', 'Убрать');
     removeButton.addEventListener('click', () => {
       cart = cart.filter((cartItem) => cartItem.dishId !== item.dishId);
       saveCart();
@@ -72,12 +87,12 @@ function renderCart() {
 
 function addToCart(dish, restaurantId) {
   if (cart.some((item) => availableMenu.get(item.dishId) !== item.restaurantId)) {
-    if (!window.confirm('В корзине есть блюда из старого меню. Очистить недоступные блюда?')) return;
+    if (!window.confirm(uiText('clearOldCart', 'В корзине есть блюда из старого меню. Очистить недоступные блюда?'))) return;
     cart = cart.filter((item) => availableMenu.get(item.dishId) === item.restaurantId);
   }
 
   if (cart.length && cart[0].restaurantId !== restaurantId) {
-    window.alert('За один заказ можно выбрать блюда только из одного ресторана.');
+    window.alert(uiText('singleRestaurant', 'За один заказ можно выбрать блюда только из одного ресторана.'));
     return;
   }
 
@@ -114,10 +129,11 @@ function createDishCard(dish, restaurant) {
   rating.className = 'dish-card__rating';
   rating.textContent = restaurant.rating ? `${'★'.repeat(restaurant.rating)}${'☆'.repeat(3 - restaurant.rating)}` : '';
   const name = document.createElement('h3');
-  name.textContent = dish.name;
+  const dishTranslation = dish.translations?.[currentLanguage] || {};
+  name.textContent = dishTranslation.name || dish.name;
   const description = document.createElement('p');
   description.className = 'dish-card__description';
-  description.textContent = dish.description || '';
+  description.textContent = dishTranslation.description || dish.description || '';
   const price = document.createElement('p');
   price.className = 'price';
   price.textContent = dish.priceUsd == null
@@ -126,12 +142,101 @@ function createDishCard(dish, restaurant) {
   const addButton = document.createElement('button');
   addButton.type = 'button';
   addButton.className = 'btn btn--add';
-  addButton.textContent = 'Добавить в корзину';
+  addButton.textContent = uiText('addToCart', 'Добавить в корзину');
   addButton.addEventListener('click', () => addToCart(dish, restaurant.id));
 
-  content.append(restaurantLabel, rating, name, description, price, addButton);
+  const detailButton = document.createElement('button');
+  detailButton.type = 'button';
+  detailButton.className = 'dish-card__link';
+  detailButton.textContent = uiText('dishDetails', 'Вино · происхождение · история');
+  detailButton.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('foodexpress:dish-select', { detail: { dish, restaurant } }));
+    document.getElementById('experience').scrollIntoView({ behavior: 'smooth' });
+  });
+  const view3dButton = document.createElement('button');
+  view3dButton.type = 'button';
+  view3dButton.className = 'dish-card__link';
+  view3dButton.textContent = uiText('view3d', 'Крутить 3D-тарелку');
+  view3dButton.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('foodexpress:3d-view', { detail: { dish, restaurant } }));
+  });
+
+  content.append(restaurantLabel, rating, name, description, price, addButton, detailButton, view3dButton);
   card.append(image, content);
   return card;
+}
+
+function renderRestaurantTabs() {
+  const tabsElement = document.getElementById('restaurant-tabs');
+  tabsElement.replaceChildren();
+
+  menuRestaurants.forEach((restaurant, index) => {
+    const tab = document.createElement('button');
+    const isActive = restaurant.id === activeRestaurantId;
+    tab.type = 'button';
+    tab.id = `restaurant-tab-${restaurant.id}`;
+    tab.className = 'restaurant-tab';
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('aria-selected', String(isActive));
+    tab.setAttribute('aria-controls', 'menu-grid');
+    tab.tabIndex = isActive ? 0 : -1;
+    tab.textContent = restaurant.translations?.[currentLanguage]?.name || restaurant.name;
+
+    const meta = document.createElement('span');
+    meta.className = 'restaurant-tab__meta';
+    const rating = restaurant.rating ? ` · ${'★'.repeat(restaurant.rating)}` : '';
+    meta.textContent = `${restaurant.country || restaurant.cuisine} · ${restaurant.dishes.length} ${uiText('dishCountSuffix', 'блюд')}${rating}`;
+    tab.append(meta);
+
+    tab.addEventListener('click', () => {
+      activeRestaurantId = restaurant.id;
+      renderRestaurantMenu();
+    });
+    tab.addEventListener('keydown', (event) => {
+      if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const tabs = [...tabsElement.querySelectorAll('[role="tab"]')];
+      const currentIndex = tabs.indexOf(tab);
+      const nextIndex = event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? tabs.length - 1
+          : (currentIndex + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+      tabs[nextIndex].focus();
+      tabs[nextIndex].click();
+    });
+
+    tabsElement.append(tab);
+  });
+}
+
+function renderRestaurantMenu() {
+  const restaurant = menuRestaurants.find((item) => item.id === activeRestaurantId);
+  const grid = document.getElementById('menu-grid');
+  const details = document.getElementById('restaurant-details');
+  const name = document.getElementById('restaurant-name');
+  const meta = document.getElementById('restaurant-meta');
+
+  renderRestaurantTabs();
+  if (!restaurant) {
+    details.hidden = true;
+    grid.replaceChildren();
+    return;
+  }
+
+  details.hidden = false;
+  name.textContent = restaurant.translations?.[currentLanguage]?.name || restaurant.name;
+  meta.textContent = [
+    restaurant.country || restaurant.cuisine,
+    restaurant.rating ? `${'★'.repeat(restaurant.rating)}${'☆'.repeat(3 - restaurant.rating)}` : '',
+    `${restaurant.dishes.length} ${uiText('menuCountSuffix', 'блюд в меню')}`,
+  ].filter(Boolean).join(' · ');
+  document.getElementById('restaurant-description').textContent =
+    restaurant.translations?.[currentLanguage]?.description || restaurant.description || '';
+  grid.setAttribute('role', 'tabpanel');
+  grid.setAttribute('aria-labelledby', `restaurant-tab-${restaurant.id}`);
+  grid.replaceChildren(...restaurant.dishes.map((dish) => createDishCard(dish, restaurant)));
+  window.dispatchEvent(new CustomEvent('foodexpress:restaurant-select', { detail: { restaurant } }));
 }
 
 async function apiRequest(url, options = {}) {
@@ -242,27 +347,30 @@ async function loadMenu() {
   try {
     const response = await fetch(`${API_URL}/restaurants`);
     const restaurants = await response.json();
-    if (!response.ok) throw new Error(restaurants.error || 'Не удалось загрузить меню');
+    if (!response.ok) throw new Error(restaurants.error || uiText('menuLoadError', 'Не удалось загрузить меню'));
 
-    const menuRestaurants = restaurants.filter((restaurant) => restaurant.dishes.length > 0);
+    menuRestaurants = restaurants.filter((restaurant) => restaurant.dishes.length > 0);
+    menuRestaurants.sort((left, right) => {
+      const leftImported = left.importKey?.startsWith('pasted-menu-') ? 0 : 1;
+      const rightImported = right.importKey?.startsWith('pasted-menu-') ? 0 : 1;
+      return leftImported - rightImported ||
+        (left.importKey || left.name).localeCompare(right.importKey || right.name, 'ru');
+    });
     availableMenu = new Map(
       menuRestaurants.flatMap((restaurant) =>
         restaurant.dishes.map((dish) => [dish.id, restaurant.id])
       )
     );
     renderCart();
-    const exchangeRate = menuRestaurants.find((restaurant) => restaurant.usdToKztRate);
-    const rateNote = document.getElementById('menu-rate-note');
-    rateNote.textContent = exchangeRate
-      ? `Курс для пересчёта цен: 1 $ = ${formatPrice.format(Number(exchangeRate.usdToKztRate))} ₸ (Нацбанк Казахстана, ${new Date(exchangeRate.rateDate).toLocaleDateString('ru-RU')}).`
-      : '';
-    const dishes = restaurants.flatMap((restaurant) =>
-      restaurant.dishes.map((dish) => ({ restaurant, dish }))
-    );
-    grid.replaceChildren(...dishes.map(({ restaurant, dish }) => createDishCard(dish, restaurant)));
-    message.textContent = dishes.length
+    menuExchangeRate = menuRestaurants.find((restaurant) => restaurant.usdToKztRate) || null;
+    renderExchangeRateNote();
+    message.textContent = menuRestaurants.length
       ? ''
-      : 'В меню пока нет блюд.';
+      : uiText('noMenu', 'В меню пока нет блюд.');
+    if (!menuRestaurants.some((restaurant) => restaurant.id === activeRestaurantId)) {
+      activeRestaurantId = menuRestaurants[0]?.id ?? null;
+    }
+    renderRestaurantMenu();
   } catch (error) {
     message.textContent = `${error.message}. Проверьте, что сервер запущен и база данных доступна.`;
   }
@@ -270,15 +378,21 @@ async function loadMenu() {
 
 const accountLink = document.getElementById('account-link');
 if (localStorage.getItem('token')) {
-  accountLink.textContent = 'Выйти';
-  accountLink.href = '#';
-  accountLink.addEventListener('click', (event) => {
+  if (localStorage.getItem('role') === 'RESTAURANT_ADMIN') {
+    accountLink.textContent = 'Панель ресторана';
+    accountLink.href = 'admin.html';
+  }
+  const logoutLink = document.createElement('a');
+  logoutLink.href = '#';
+  logoutLink.textContent = 'Выйти';
+  logoutLink.addEventListener('click', (event) => {
     event.preventDefault();
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     localStorage.removeItem('user');
     window.location.reload();
   });
+  accountLink.after(logoutLink);
 }
 
 document.getElementById('checkout-button').addEventListener('click', async (event) => {
@@ -324,4 +438,9 @@ document.getElementById('checkout-button').addEventListener('click', async (even
 
 renderCart();
 loadMenu();
-setupOwnerDashboard();
+window.setFoodLanguage = (language) => {
+  currentLanguage = language;
+  renderCart();
+  renderExchangeRateNote();
+  renderRestaurantMenu();
+};
