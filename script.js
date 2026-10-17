@@ -249,9 +249,7 @@ async function apiRequest(url, options = {}) {
       ...options.headers,
     },
   });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'Не удалось выполнить запрос');
-  return data;
+  return window.readApiResponse(response);
 }
 
 async function loadOwnerOrders(restaurantId) {
@@ -346,8 +344,10 @@ async function loadMenu() {
   const message = document.getElementById('menu-message');
   try {
     const response = await fetch(`${API_URL}/restaurants`);
-    const restaurants = await response.json();
-    if (!response.ok) throw new Error(restaurants.error || uiText('menuLoadError', 'Не удалось загрузить меню'));
+    const restaurants = await window.readApiResponse(
+      response,
+      uiText('menuLoadError', 'Не удалось загрузить меню')
+    );
 
     menuRestaurants = restaurants.filter((restaurant) => restaurant.dishes.length > 0);
     menuRestaurants.sort((left, right) => {
@@ -416,14 +416,16 @@ document.getElementById('checkout-button').addEventListener('click', async (even
         items: cart.map(({ dishId, qty }) => ({ dishId, qty })),
       }),
     });
-    const data = await response.json();
-    if (!response.ok) {
+    let data;
+    try {
+      data = await window.readApiResponse(response, 'Не удалось оформить заказ');
+    } catch (error) {
       if (response.status === 401) {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
         localStorage.removeItem('user');
       }
-      throw new Error(data.error || 'Не удалось оформить заказ');
+      throw error;
     }
 
     cart = [];

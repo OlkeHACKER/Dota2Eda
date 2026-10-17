@@ -398,8 +398,7 @@ async function loadAvailableTables() {
   try {
     const query = new URLSearchParams({ startsAt: startsAt.toISOString(), guests: String(guests) });
     const response = await fetch(`/api/restaurants/${selectedRestaurant.id}/tables?${query}`);
-    const tables = await response.json();
-    if (!response.ok) throw new Error(tables.error || 'Не удалось загрузить план зала');
+    const tables = await window.readApiResponse(response, 'Не удалось загрузить план зала');
     availableTables = tables;
     if (!tables.length) {
       hint.textContent = text('noTables');
@@ -454,8 +453,7 @@ document.getElementById('booking-form').addEventListener('submit', async (event)
         note: document.getElementById('booking-note').value.trim(),
       }),
     });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'Не удалось создать бронирование');
+    const result = await window.readApiResponse(response, 'Не удалось создать бронирование');
     message.textContent = `${text('bookingSuccess')}: ${result.table.name}, ${new Date(result.startsAt).toLocaleString()}`;
     selectedTable = null;
     await loadAvailableTables();

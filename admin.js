@@ -14,12 +14,7 @@ async function request(url, options = {}) {
     },
   });
   if (response.status === 204) return null;
-  const data = await response.json();
-  if (!response.ok) {
-    const details = data.errors?.map((error) => error.msg).join('. ');
-    throw new Error(details || data.error || 'Не удалось выполнить запрос');
-  }
-  return data;
+  return window.readApiResponse(response);
 }
 
 function setMessage(text, error = false) {

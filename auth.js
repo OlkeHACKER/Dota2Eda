@@ -11,12 +11,7 @@ function showMessage(messageId, message) {
 }
 
 async function readResponse(response) {
-  const data = await response.json();
-  if (!response.ok) {
-    const validationMessage = data.errors?.map((error) => error.msg).join('. ');
-    throw new Error(validationMessage || data.error || 'Не удалось выполнить запрос');
-  }
-  return data;
+  return window.readApiResponse(response);
 }
 
 function saveSession(data) {

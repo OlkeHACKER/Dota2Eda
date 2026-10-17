@@ -65,7 +65,12 @@ app.get('/admin.html', (req, res) => {
   res.sendFile(path.join(projectRoot, 'admin.html'));
 });
 
-app.get(['/restaurant-experience.js', '/admin.js', '/three-viewer.js'], (req, res, next) => {
+app.get([
+  '/restaurant-experience.js',
+  '/admin.js',
+  '/three-viewer.js',
+  '/api-response.js',
+], (req, res, next) => {
   const fileName = path.basename(req.path);
   res.sendFile(path.join(projectRoot, fileName), (error) => {
     if (error) next(error);
