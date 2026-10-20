@@ -1,4 +1,4 @@
-const API_URL = '/api';
+const API_URL = window.apiUrl('/api');
 const token = localStorage.getItem('token');
 const messageElement = document.getElementById('admin-message');
 let restaurant;

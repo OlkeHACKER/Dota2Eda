@@ -81,6 +81,35 @@ app.get('/node_modules/three/build/three.module.js', (req, res) => {
   res.sendFile(path.join(projectRoot, 'node_modules', 'three', 'build', 'three.module.js'));
 });
 
+app.get('/node_modules/three/build/three.core.js', (req, res) => {
+  res.sendFile(path.join(projectRoot, 'node_modules', 'three', 'build', 'three.core.js'));
+});
+
+app.get([
+  '/node_modules/leaflet/dist/leaflet.js',
+  '/node_modules/leaflet/dist/leaflet.css',
+], (req, res, next) => {
+  res.sendFile(path.join(projectRoot, 'node_modules', 'leaflet', 'dist', path.basename(req.path)), (error) => {
+    if (error) next(error);
+  });
+});
+
+app.get('/node_modules/leaflet/dist/images/:file', (req, res, next) => {
+  const imageFiles = new Set([
+    'layers.png',
+    'layers-2x.png',
+    'marker-icon.png',
+    'marker-icon-2x.png',
+    'marker-shadow.png',
+  ]);
+  if (!imageFiles.has(req.params.file)) {
+    return res.status(404).json({ error: 'Файл Leaflet не найден' });
+  }
+  res.sendFile(path.join(projectRoot, 'node_modules', 'leaflet', 'dist', 'images', req.params.file), (error) => {
+    if (error) next(error);
+  });
+});
+
 app.get(['/vendor/three.module.js', '/vendor/three.core.js'], (req, res, next) => {
   const fileName = path.basename(req.path);
   res.sendFile(path.join(projectRoot, 'node_modules', 'three', 'build', fileName), (error) => {

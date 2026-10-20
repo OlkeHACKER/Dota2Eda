@@ -1,4 +1,4 @@
-const API_URL = '/api';
+const API_URL = window.apiUrl('/api');
 
 function showError(errorId, isValid) {
   const errorElement = document.getElementById(errorId);

@@ -1,3 +1,13 @@
+window.apiUrl = function apiUrl(path) {
+  const port = Number(window.location.port);
+  const isLiveServerPort = Number.isInteger(port) && port >= 5500 && port <= 5599;
+  const backendOrigin = isLiveServerPort
+    ? `${window.location.protocol}//${window.location.hostname}:5000`
+    : '';
+  const apiPath = path.startsWith('/') ? path : `/${path}`;
+  return `${backendOrigin}${apiPath}`;
+};
+
 window.readApiResponse = async function readApiResponse(response, fallbackMessage = 'Не удалось выполнить запрос') {
   const text = await response.text();
   let data = null;

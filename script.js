@@ -1,4 +1,4 @@
-const API_URL = '/api';
+const API_URL = window.apiUrl('/api');
 const cartStorageKey = 'foodexpress-cart';
 const formatPrice = new Intl.NumberFormat('ru-RU');
 let availableMenu = new Map();

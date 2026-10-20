@@ -241,7 +241,7 @@ function renderRestaurantExperience(restaurant) {
     timelineEvents.append(item);
   });
 
-  document.getElementById('restaurant-qr').src = `/api/restaurants/${restaurant.id}/qr.svg`;
+  document.getElementById('restaurant-qr').src = window.apiUrl(`/api/restaurants/${restaurant.id}/qr.svg`);
   document.getElementById('print-restaurant-name').textContent = restaurant.name;
   document.getElementById('print-restaurant-description').textContent = restaurant.description || restaurant.cuisine;
   const printDishes = document.getElementById('print-dishes');
@@ -397,7 +397,7 @@ async function loadAvailableTables() {
   const startsAt = new Date(date);
   try {
     const query = new URLSearchParams({ startsAt: startsAt.toISOString(), guests: String(guests) });
-    const response = await fetch(`/api/restaurants/${selectedRestaurant.id}/tables?${query}`);
+    const response = await fetch(window.apiUrl(`/api/restaurants/${selectedRestaurant.id}/tables?${query}`));
     const tables = await window.readApiResponse(response, 'Не удалось загрузить план зала');
     availableTables = tables;
     if (!tables.length) {
@@ -443,7 +443,7 @@ document.getElementById('booking-form').addEventListener('submit', async (event)
     return;
   }
   try {
-    const response = await fetch(`/api/restaurants/${selectedRestaurant.id}/reservations`, {
+    const response = await fetch(window.apiUrl(`/api/restaurants/${selectedRestaurant.id}/reservations`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({
