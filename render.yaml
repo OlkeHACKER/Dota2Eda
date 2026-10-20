@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: dota2eda
+    runtime: node
+    plan: free
+    branch: main
+    buildCommand: npm ci && npx prisma generate
+    startCommand: npx prisma migrate deploy && npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
