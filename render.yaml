@@ -5,7 +5,7 @@ services:
     plan: free
     branch: main
     buildCommand: npm ci && npx prisma generate
-    startCommand: npx prisma migrate deploy && npm start
+    startCommand: npm run render:start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV

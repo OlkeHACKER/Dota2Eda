@@ -25,7 +25,8 @@
 
 В корне проекта есть `render.yaml` для бесплатного веб-сервиса. Чтобы создать
 его, войдите в Render, выберите **New → Blueprint**, подключите репозиторий
-`OlkeHACKER/Dota2Eda` и подтвердите создание сервиса `dota2eda`.
+`OlkeHACKER/Dota2Eda` и подтвердите создание сервиса `dota2eda`. Для уже
+созданного Web Service укажите Start Command `npm run render:start`.
 
 При настройке Render запросит `DATABASE_URL`: укажите строку подключения к
 облачной PostgreSQL, предназначенной для этого проекта. Миграции Prisma
